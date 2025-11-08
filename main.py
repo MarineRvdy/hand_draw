@@ -1,6 +1,7 @@
 
 import cv2
 import mediapipe as mp
+import numpy as np
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands # deetect an follow hands
@@ -18,6 +19,8 @@ hands = mp_hands.Hands(
 cv2.namedWindow("Camera")
 cap = cv2.VideoCapture(0)  # 0 = webcam
 
+overlay = None
+
 if cap.isOpened():
     ret, frame = cap.read()
 else :
@@ -25,6 +28,7 @@ else :
 
 while ret:
     ret, frame = cap.read()
+    old_image = None
     frame = cv2.flip(frame, 1) # flip camera to mirror
     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # colors conversion
 
@@ -34,6 +38,9 @@ while ret:
     
     image.flags.writeable = True
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+    if overlay is None:
+        overlay = np.zeros_like(image, dtype=np.uint8)
 
     # Draw hand landmarks
     if points.multi_hand_landmarks:
@@ -52,24 +59,23 @@ while ret:
             y_index = hand_landmarks.landmark[index_finger_tip].y
             z_index = hand_landmarks.landmark[index_finger_tip].z
 
-            # print(f"thumb {x_thumb,y_thumb,z_thumb} index {x_index, y_index, z_index}")
-            # print(f"x : {x_thumb, x_index}")
-            # print(f"x : {round(x_thumb,2), round(x_index,2)}")
-            # print(f"y : {y_thumb, y_index}")
-            # print(f"z : {z_thumb, z_index}")
-            # print()
-            # print(round(x_thumb,2) ,round(x_index,2), round(x_index+0.01,2), round(x_index-0.01,2))
             if round(x_thumb,2) in [round(x_index,2), round(x_index+0.01,2), round(x_index-0.01,2)]:
                 print("proche")
-            
-            
+                
+                # convert 0-1 coords in pixels coords
+                height, width = image.shape[:2]
+                x_pixel = int(x_thumb * width)
+                y_pixel = int(y_thumb * height)
+                cv2.circle(img=overlay, center=(x_pixel,y_pixel), radius=5, color=(255,0,0), thickness=-1)
            
-            mp_drawing.draw_landmarks(
-                image,
-                hand_landmarks,
-                mp_hands.HAND_CONNECTIONS
-            )
-    cv2.imshow('Camera', image)
+            # mp_drawing.draw_landmarks(
+            #     image,
+            #     hand_landmarks,
+            #     mp_hands.HAND_CONNECTIONS
+            # )
+    combined = cv2.addWeighted(image, 1, overlay, 1, 0)
+    cv2.imshow('Camera', combined)
+    
     key = cv2.waitKey(20)
     if key == 27:
         break

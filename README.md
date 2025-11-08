@@ -11,3 +11,7 @@
 # Version 2 : MAIN.py
 
 * Controle distance entre pouce et index et dit "proche" quand on est prêt à écrire.
+
+# Version 3 : MAIN.py
+
+* Ajout des points bleu quand serre index et pouce
