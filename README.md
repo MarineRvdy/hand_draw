@@ -15,3 +15,7 @@
 # Version 3 : MAIN.py
 
 * Ajout des points bleu quand serre index et pouce
+
+# Version 4 : MAIN.py
+
+* Ajout des de la suppression par poings fermé

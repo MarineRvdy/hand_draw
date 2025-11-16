@@ -44,8 +44,18 @@ while ret:
 
     # Draw hand landmarks
     if points.multi_hand_landmarks:
+        # tip finger
         thumb_tip = 4
         index_finger_tip = 8
+        middle_finger_tip = 12
+        ring_finger_tip = 16
+        pinky_finger_tip = 20
+        
+        # mcp finger
+        index_finger_mcp = 5
+        middle_finger_mcp = 9
+        ring_finger_mcp = 13
+        pinky_finger_mcp = 17
         
     
         for hand_landmarks in points.multi_hand_landmarks: # hand_landmarks contains 21 coords (x,y,z)
@@ -55,19 +65,59 @@ while ret:
             z_thumb = hand_landmarks.landmark[thumb_tip].z
 
             # index tip 
-            x_index = hand_landmarks.landmark[index_finger_tip].x
-            y_index = hand_landmarks.landmark[index_finger_tip].y
-            z_index = hand_landmarks.landmark[index_finger_tip].z
+            x_index_tip = hand_landmarks.landmark[index_finger_tip].x
+            y_index_tip = hand_landmarks.landmark[index_finger_tip].y
+            z_index_tip = hand_landmarks.landmark[index_finger_tip].z
 
-            if round(x_thumb,2) in [round(x_index,2), round(x_index+0.01,2), round(x_index-0.01,2)]:
-                print("proche")
+            # middle tip 
+            x_middle_tip = hand_landmarks.landmark[middle_finger_tip].x
+            y_middle_tip = hand_landmarks.landmark[middle_finger_tip].y
+            z_middle_tip = hand_landmarks.landmark[middle_finger_tip].z
+
+            # ring tip 
+            x_ring_tip = hand_landmarks.landmark[ring_finger_tip].x
+            y_ring_tip = hand_landmarks.landmark[ring_finger_tip].y
+            z_ring_tip = hand_landmarks.landmark[ring_finger_tip].z
+
+            # pinky tip 
+            x_pinky_tip = hand_landmarks.landmark[pinky_finger_tip].x
+            y_pinky_tip = hand_landmarks.landmark[pinky_finger_tip].y
+            z_pinky_tip = hand_landmarks.landmark[pinky_finger_tip].z
+
+            # index mcp 
+            x_index_mcp = hand_landmarks.landmark[index_finger_mcp].x
+            y_index_mcp = hand_landmarks.landmark[index_finger_mcp].y
+            z_index_mcp = hand_landmarks.landmark[index_finger_mcp].z
+
+            # middle mcp 
+            x_middle_mcp = hand_landmarks.landmark[middle_finger_mcp].x
+            y_middle_mcp = hand_landmarks.landmark[middle_finger_mcp].y
+            z_middle_mcp = hand_landmarks.landmark[middle_finger_mcp].z
+
+            # ring mcp 
+            x_ring_mcp = hand_landmarks.landmark[ring_finger_mcp].x
+            y_ring_mcp = hand_landmarks.landmark[ring_finger_mcp].y
+            z_ring_mcp = hand_landmarks.landmark[ring_finger_mcp].z
+
+            # pinky mcp 
+            x_pinky_mcp = hand_landmarks.landmark[pinky_finger_mcp].x
+            y_pinky_mcp = hand_landmarks.landmark[pinky_finger_mcp].y
+            z_pinky_mcp = hand_landmarks.landmark[pinky_finger_mcp].z
+
+            if round(x_thumb,2) in [round(x_index_tip,2), round(x_index_tip+0.01,2), round(x_index_tip-0.01,2)]:
+                print("écriture")
                 
                 # convert 0-1 coords in pixels coords
                 height, width = image.shape[:2]
                 x_pixel = int(x_thumb * width)
                 y_pixel = int(y_thumb * height)
                 cv2.circle(img=overlay, center=(x_pixel,y_pixel), radius=5, color=(255,0,0), thickness=-1)
-           
+            
+            if round(x_index_tip,2) in [round(x_index_mcp,2), round(x_index_mcp+0.01,2), round(x_index_mcp-0.01,2)] and round(x_middle_tip,2) in [round(x_middle_mcp,2), round(x_middle_mcp+0.01,2), round(x_middle_mcp-0.01,2)]:
+                print("effacer")
+
+                # erase all points
+                overlay = np.zeros_like(image, dtype=np.uint8)
             # mp_drawing.draw_landmarks(
             #     image,
             #     hand_landmarks,
