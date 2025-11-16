@@ -19,3 +19,8 @@
 # Version 4 : MAIN.py
 
 * Ajout des de la suppression par poings fermé
+
+
+# Version 5 : MAIN.py
+
+* Ajout changer couleurs par pouce et majeur proche

@@ -2,6 +2,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import random as rd
 
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands # deetect an follow hands
@@ -15,11 +16,16 @@ hands = mp_hands.Hands(
 )
 
 
-
 cv2.namedWindow("Camera")
 cap = cv2.VideoCapture(0)  # 0 = webcam
 
 overlay = None
+pen_color = (255,0,0)
+
+def euclidean_dist(pts1,pts2):
+    p1 = np.array([pts1.x,pts1.y,pts1.z])
+    p2 = np.array([pts2.x, pts2.y, pts2.z])
+    return np.linalg.norm(p1 - p2)
 
 if cap.isOpened():
     ret, frame = cap.read()
@@ -42,6 +48,8 @@ while ret:
     if overlay is None:
         overlay = np.zeros_like(image, dtype=np.uint8)
 
+    height, width = image.shape[:2]
+
     # Draw hand landmarks
     if points.multi_hand_landmarks:
         # tip finger
@@ -56,68 +64,47 @@ while ret:
         middle_finger_mcp = 9
         ring_finger_mcp = 13
         pinky_finger_mcp = 17
-        
+               
     
         for hand_landmarks in points.multi_hand_landmarks: # hand_landmarks contains 21 coords (x,y,z)
-            # thumb tip 
-            x_thumb = hand_landmarks.landmark[thumb_tip].x
-            y_thumb = hand_landmarks.landmark[thumb_tip].y
-            z_thumb = hand_landmarks.landmark[thumb_tip].z
+            landmarks = hand_landmarks.landmark
+            
+            # recover (x,y,z)
+            thumb = landmarks[thumb_tip]
+            index_tip = landmarks[index_finger_tip]
+            middle_tip = landmarks[middle_finger_tip]
+            ring_tip = landmarks[ring_finger_tip]
+            pinky_tip = landmarks[pinky_finger_tip]
+            index_mcp = landmarks[index_finger_mcp]
+            middle_mcp = landmarks[middle_finger_mcp]
+            ring_mcp = landmarks[ring_finger_mcp]
+            pinky_mcp = landmarks[pinky_finger_mcp]
 
-            # index tip 
-            x_index_tip = hand_landmarks.landmark[index_finger_tip].x
-            y_index_tip = hand_landmarks.landmark[index_finger_tip].y
-            z_index_tip = hand_landmarks.landmark[index_finger_tip].z
-
-            # middle tip 
-            x_middle_tip = hand_landmarks.landmark[middle_finger_tip].x
-            y_middle_tip = hand_landmarks.landmark[middle_finger_tip].y
-            z_middle_tip = hand_landmarks.landmark[middle_finger_tip].z
-
-            # ring tip 
-            x_ring_tip = hand_landmarks.landmark[ring_finger_tip].x
-            y_ring_tip = hand_landmarks.landmark[ring_finger_tip].y
-            z_ring_tip = hand_landmarks.landmark[ring_finger_tip].z
-
-            # pinky tip 
-            x_pinky_tip = hand_landmarks.landmark[pinky_finger_tip].x
-            y_pinky_tip = hand_landmarks.landmark[pinky_finger_tip].y
-            z_pinky_tip = hand_landmarks.landmark[pinky_finger_tip].z
-
-            # index mcp 
-            x_index_mcp = hand_landmarks.landmark[index_finger_mcp].x
-            y_index_mcp = hand_landmarks.landmark[index_finger_mcp].y
-            z_index_mcp = hand_landmarks.landmark[index_finger_mcp].z
-
-            # middle mcp 
-            x_middle_mcp = hand_landmarks.landmark[middle_finger_mcp].x
-            y_middle_mcp = hand_landmarks.landmark[middle_finger_mcp].y
-            z_middle_mcp = hand_landmarks.landmark[middle_finger_mcp].z
-
-            # ring mcp 
-            x_ring_mcp = hand_landmarks.landmark[ring_finger_mcp].x
-            y_ring_mcp = hand_landmarks.landmark[ring_finger_mcp].y
-            z_ring_mcp = hand_landmarks.landmark[ring_finger_mcp].z
-
-            # pinky mcp 
-            x_pinky_mcp = hand_landmarks.landmark[pinky_finger_mcp].x
-            y_pinky_mcp = hand_landmarks.landmark[pinky_finger_mcp].y
-            z_pinky_mcp = hand_landmarks.landmark[pinky_finger_mcp].z
-
-            if round(x_thumb,2) in [round(x_index_tip,2), round(x_index_tip+0.01,2), round(x_index_tip-0.01,2)]:
-                print("écriture")
+            # write (index_tip near thumb)
+            if euclidean_dist(thumb, index_tip) < 0.07:
+                print("write")
                 
                 # convert 0-1 coords in pixels coords
-                height, width = image.shape[:2]
-                x_pixel = int(x_thumb * width)
-                y_pixel = int(y_thumb * height)
-                cv2.circle(img=overlay, center=(x_pixel,y_pixel), radius=5, color=(255,0,0), thickness=-1)
-            
-            if round(x_index_tip,2) in [round(x_index_mcp,2), round(x_index_mcp+0.01,2), round(x_index_mcp-0.01,2)] and round(x_middle_tip,2) in [round(x_middle_mcp,2), round(x_middle_mcp+0.01,2), round(x_middle_mcp-0.01,2)]:
-                print("effacer")
+                x_pixel = int(index_tip.x * width)
+                y_pixel = int(index_tip.y * height)
+
+
+                cv2.circle(img=overlay, center=(x_pixel,y_pixel),radius=5, color=pen_color, thickness=-1)
+
+            # erase (tip near mcp)
+            if euclidean_dist(index_mcp, index_tip) < 0.09 and euclidean_dist(middle_mcp, middle_tip) < 0.09 and euclidean_dist(ring_mcp, ring_tip) < 0.09 and euclidean_dist(pinky_mcp, pinky_tip) < 0.09:
+                print("erase")
 
                 # erase all points
                 overlay = np.zeros_like(image, dtype=np.uint8)
+
+            # change color (middle near thul)
+            if euclidean_dist(thumb, middle_tip) < 0.07:
+                print("change color")
+
+                pen_color = (rd.randint(0,255),rd.randint(0,255),rd.randint(0,255))
+
+
             # mp_drawing.draw_landmarks(
             #     image,
             #     hand_landmarks,
