@@ -111,6 +111,25 @@ while ret:
             #     mp_hands.HAND_CONNECTIONS
             # )
     combined = cv2.addWeighted(image, 1, overlay, 1, 0)
+    
+    # rectangle bottom right
+    x, y, w, h = width - 230, height - 110, 220, 100
+    cv2.rectangle(combined, (x, y), (x + w, y + h), (0, 0, 0), -1)
+    cv2.rectangle(combined, (x, y), (x + w, y + h), (255, 255, 255), 2)
+
+    # instructions
+    options = [
+        ("INSTRUCTIONS", (0, 255, 255)),
+        ("Write: Index + Thumb", (255, 255, 255)),
+        ("Color: Middle + Thumb", (255, 255, 255)),
+        ("Erase: Closed Hand", (255, 255, 255))
+    ]
+
+    for i, (text, col) in enumerate(options):
+        cv2.putText(combined, text, (x + 10, y + 25 + (i * 20)), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, col, 1)
+        
+
     cv2.imshow('Camera', combined)
     
     key = cv2.waitKey(20)

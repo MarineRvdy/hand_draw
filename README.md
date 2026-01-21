@@ -24,3 +24,7 @@
 # Version 5 : MAIN.py
 
 * Ajout changer couleurs par pouce et majeur proche
+
+# Version 6 : MAIN.py
+
+* Ajout d'un encadré pour les instructions
